@@ -13,19 +13,17 @@
 <style>
 nav {
 	display: flex;
-	gap: 1rem;
 	padding: 1rem;
 	border-bottom: 1px solid #ccc;
 	background-color: #eee;
 	box-shadow: 0 0 5px #ccc;
-	justify-content: center;
+	justify-content: right;
 	align-items: center;
 }
 nav a {
 	color: #333;
 	font-weight: bold;
 	padding: 0.5rem;
-	border: 1px solid #ccc;
 	border-radius: 0.25rem;
 
 }
