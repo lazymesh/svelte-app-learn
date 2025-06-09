@@ -176,6 +176,10 @@
 
     const today = new Date();
     const today_nepali = ad2bs(today);
+    let temp_today_nepali = today_nepali;
+    let temp_nepali_month = $state(temp_today_nepali.getMonth());
+    let temp_nepali_year = $state(temp_today_nepali.getFullYear());
+    let temp_ad_year = $state(today.getFullYear());
     let now = {};
 
     String.prototype.toNepaliDigits = function () {
@@ -452,30 +456,41 @@
     function getNepaliDate(date) {
         return `${date.getFullYear().toString().toNepaliDigits()}-${date.getMonth().toString().toNepaliDigits()}-${date.getDate().toString().toNepaliDigits()}`;
     }
+
+    let changeToPreNepaliMonth = () => {
+        temp_today_nepali.setMonth(temp_today_nepali.getMonth() - 1);
+        temp_nepali_month = temp_today_nepali.getMonth();
+        temp_nepali_year = temp_today_nepali.getFullYear();
+    }
+    let changeToNextNepaliMonth = () => {
+        temp_today_nepali.setMonth(temp_today_nepali.getMonth() + 1);
+        temp_nepali_month = temp_today_nepali.getMonth();
+    }
+
 </script>
 
 <div class="calendar-container">
     <div class="calendar-head">
         <div class="calendar-title">
-            {title} {today_nepali}
+            {title}
         </div>
         <div class="cal-nav">
             <div class="cal-head-left">
                 <div class="cal-btn cal-prev-year"> 
                     <small>{first}</small>
                 </div>
-                <div class="cal-btn cal-prev"> 
+                <div class="cal-btn cal-prev" onclick={changeToPreNepaliMonth}> 
                     <small>{prev}</small>
                 </div>
             </div>
             <div class="cal-head-center">
-                <span class="cal-year"> <strong>{today_nepali.getFullYear().toString().toNepaliDigits()}/</strong><small>{today.getFullYear()}</small> </span>
-                <span class="month"><strong>{getMonthName(today_nepali.getMonth())}{today.month}</strong></span>
-                <span class="int-month"><small>(August/September)</small></span>
+                <span class="cal-year"> <strong>{temp_nepali_year.toString().toNepaliDigits()}/</strong><small>{temp_ad_year}</small> </span>
+                <span class="month"><strong>{getMonthName(temp_nepali_month)}</strong></span>
+                <span class="int-month"><small>({getMonthName(temp_nepali_month + 3, false)}/{getMonthName(temp_nepali_month + 4, false)})</small></span>
 
             </div>
             <div class="cal-head-right">
-                <div class="cal-btn cal-next">
+                <div class="cal-btn cal-next" onclick={changeToNextNepaliMonth}>
                     <small>{next}</small>
                 </div>
                 <div class="cal-btn cal-next-year">
