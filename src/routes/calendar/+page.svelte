@@ -6,67 +6,67 @@
     const next = ">";
     const nepali_digits = ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"];
     const days = [
-    "SUNDAY",
-    "MONDAY",
-    "TUESDAY",
-    "WEDNESDAY",
-    "THURSDAY",
-    "FRIDAY",
-    "SATURDAY",
+        "SUNDAY",
+        "MONDAY",
+        "TUESDAY",
+        "WEDNESDAY",
+        "THURSDAY",
+        "FRIDAY",
+        "SATURDAY",
     ];
     const months = [
-    "JANUARY",
-    "FEBRUARY",
-    "MARCH",
-    "APRIL",
-    "MAY",
-    "JUNE",
-    "JULY",
-    "AUGUST",
-    "SEPETEMBER",
-    "OCTOBER",
-    "NOVEMBER",
-    "DECEMBER",
+        "JANUARY",
+        "FEBRUARY",
+        "MARCH",
+        "APRIL",
+        "MAY",
+        "JUNE",
+        "JULY",
+        "AUGUST",
+        "SEPETEMBER",
+        "OCTOBER",
+        "NOVEMBER",
+        "DECEMBER",
     ];
     const days_nepali = [
-    "आइतवार",
-    "साेमवार",
-    "मंगलवार",
-    "बुधवार",
-    "विहीवार",
-    "शुक्रवार",
-    "शनिवार",
+        "आइतवार",
+        "साेमवार",
+        "मंगलवार",
+        "बुधवार",
+        "विहीवार",
+        "शुक्रवार",
+        "शनिवार",
     ];
     const months_nepali = [
-    "बैशाख",
-    "जेठ",
-    "असार",
-    "श्रावण",
-    "भदाै",
-    "असाेज",
-    "कातिक",
-    "मंसिर",
-    "पुस",
-    "माघ",
-    "फागुन",
-    "चैत",
+        "बैशाख",
+        "जेठ",
+        "असार",
+        "श्रावण",
+        "भदाै",
+        "असाेज",
+        "कातिक",
+        "मंसिर",
+        "पुस",
+        "माघ",
+        "फागुन",
+        "चैत",
     ];
 
     const intdates = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
     const reference = {
-    int: {
-        year: 2020,
-        month: 4,
-        date: 13,
-        day: 2,
-    },
-    np: {
-        year: 2077,
-        month: 1,
-        date: 1,
-        day: 2,
-    },
+        int: {
+            year: 2020,
+            month: 4,
+            date: 13,
+            day: 2,
+        },
+        np: {
+            year: 2077,
+            month: 1,
+            date: 1,
+            day: 2,
+        },
     };
 
     const npdates = {
@@ -172,46 +172,47 @@
         2099: [31, 31, 32, 31, 31, 31, 30, 29, 29, 30, 30, 30, 365],
     };
 
-    let today = new Date();
-    let now = {};
-
     const daysInYear = 365;
 
+    const today = new Date();
+    const today_nepali = ad2bs(today);
+    let now = {};
+
     String.prototype.toNepaliDigits = function () {
-    return this.replace(/[0-9]/g, (match) => {
-        return nepali_digits[match];
-    });
+        return this.replace(/[0-9]/g, (match) => {
+            return nepali_digits[match];
+        });
     };
 
     String.prototype.revNepaliNumber = function () {
-    return this.replace(/['०','१','२','३','४','५','६','७','८','९']/g, (match) => {
-        return nepali_digits.findIndex((element) => element == match);
-    });
+        return this.replace(/['०','१','२','३','४','५','६','७','८','९']/g, (match) => {
+            return nepali_digits.findIndex((element) => element == match);
+        });
     };
 
     String.prototype.dateObjects = function (monthFirst = true) {
-    date = {};
-    //parse the element of dates
-    let data = /(\d+)[/.-](\d+)[/.-](\d+)/gi.exec(this.toString());
-    data.forEach((elem) => {
-        elem = parseInt(elem);
-        if (elem > 32) {
-        date.year = elem;
-        return;
-        }
-        if (monthFirst) {
-        if (typeof date.month == "undefined") {
-            date.month = elem;
-        }
-        date.date = elem;
-        } else {
-        if (typeof date.date == "undefined") {
+        date = {};
+        //parse the element of dates
+        let data = /(\d+)[/.-](\d+)[/.-](\d+)/gi.exec(this.toString());
+        data.forEach((elem) => {
+            elem = parseInt(elem);
+            if (elem > 32) {
+            date.year = elem;
+            return;
+            }
+            if (monthFirst) {
+            if (typeof date.month == "undefined") {
+                date.month = elem;
+            }
             date.date = elem;
-        }
-        date.month = elem;
-        }
-    });
-    return date;
+            } else {
+            if (typeof date.date == "undefined") {
+                date.date = elem;
+            }
+            date.month = elem;
+            }
+        });
+        return date;
     };
 
     Date.prototype.format = function (seprator = "-") {
@@ -225,224 +226,238 @@
     };
 
     function formatDate(date, sep = "-") {
-    return `${date.year}${sep}${date.month}${sep}${date.date}`;
+        return `${date.year}${sep}${date.month}${sep}${date.date}`;
     }
 
     function createDate(
-    year = now.np.year,
-    month = now.np.month,
-    date = now.np.date,
-    sep = "-"
-    ) {
-    return `${year}${sep}${month}${sep}${date}`;
+        year = now.np.year,
+        month = now.np.month,
+        date = now.np.date,
+        sep = "-"
+        ) {
+        return `${year}${sep}${month}${sep}${date}`;
     }
 
     function countDaysInYear(year) {
-    if (typeof npdates[year] === "undefined") {
-        return daysInYear;
-    }
-    return npdates[year][12];
+
+        if (typeof npdates[year] === "undefined") {
+            return daysInYear;
+
+        }
+        return npdates[year][12];
     }
 
     function countPartialDays(date, dir) {
-    let count = 0;
-    //add up the days from top up to previous of given date
-    for (let i = 0; i < date.month - 1; i++) {
-        count += npdates[date.year][i];
-    }
-    //add the date of given date to the count
-    count += date.date;
-    //if direction is opposite then complement the count with year sum
-    if (!dir) {
-        //if dir is set then count top to bottom
-        count = npdates[date.year][12] - count + 1;
-    } else {
-        count--;
-    }
-    //return the value of count
-    return count;
+        let count = 0;
+        //add up the days from top up to previous of given date
+        for (let i = 0; i < date.month - 1; i++) {
+            count += npdates[date.year][i];
+        }
+        //add the date of given date to the count
+        count += date.date;
+        //if direction is opposite then complement the count with year sum
+        if (!dir) {
+            //if dir is set then count top to bottom
+            count = npdates[date.year][12] - count + 1;
+        } else {
+            count--;
+        }
+        //return the value of count
+        return count;
     }
 
     function daysInMonth(year = now.np.year, month = now.np.month) {
-    // let iny = year,
-    //     inm = month;
-    //to make it array compatible subtract one in month
-    month--;
-    if (month < 0) {
-        month += 11;
-        year--;
-    }
-    let days = npdates[year][month];
-    //console.log(`${iny}-${inm} : ${days} days`);
-    return days;
+
+        // let iny = year,
+        //     inm = month;
+        //to make it array compatible subtract one in month
+        month--;
+        if (month < 0) {
+            month += 11;
+            year--;
+        }
+        let days = npdates[year][month];
+        //console.log(`${iny}-${inm} : ${days} days`);
+        return days;
     }
 
     function isLeapYear(year) {
-    return daysInYear !== countDaysInYear(year);
+        return daysInYear !== countDaysInYear(year);
+
+
     }
 
     function countBSDays(date) {
-    if (typeof date !== "string") {
-        console.error("Invalid date!");
-        return;
-    }
-
-    let dayCount = {
-        value: 0,
-        dir: 0,
-        npdate: date,
-    };
-
-    //convert the date provided to an json object
-    date = date.toString().dateObjects();
-
-    if (date.year < 2000) {
-        console.error("Invalid date range: Ahead of 2000 BS");
-        return 0;
-    }
-
-    if (date.year > 2099) {
-        console.error("Invalid date range: After 1999 BS");
-        return 0;
-    }
-
-    dayCount.dir = compNpDates(date, reference.np);
-
-    if (dayCount.dir == 0) return dayCount;
-
-    let i =
-        dayCount.dir < 0 ? reference.np.year + dayCount.dir : reference.np.year;
-    let loop = true;
-
-    while (loop && reference.np.year !== date.year) {
-        dayCount.value += countDaysInYear(i);
-        i += dayCount.dir;
-        if (dayCount.dir < 0) {
-        if (i <= date.year) loop = false;
-        } else {
-        if (i >= date.year) loop = false;
+        if (typeof date !== "string") {
+            console.error("Invalid date!");
+            return;
         }
-    }
-    dayCount.value += countPartialDays(date, dayCount.dir < 0 ? false : true);
-    return dayCount;
+
+        let dayCount = {
+            value: 0,
+            dir: 0,
+            npdate: date,
+        };
+
+        //convert the date provided to an json object
+        date = date.toString().dateObjects();
+
+        if (date.year < 2000) {
+            console.error("Invalid date range: Ahead of 2000 BS");
+            return 0;
+        }
+
+        if (date.year > 2099) {
+            console.error("Invalid date range: After 1999 BS");
+            return 0;
+        }
+
+        dayCount.dir = compNpDates(date, reference.np);
+
+        if (dayCount.dir == 0) return dayCount;
+
+        let i =
+            dayCount.dir < 0 ? reference.np.year + dayCount.dir : reference.np.year;
+        let loop = true;
+
+        while (loop && reference.np.year !== date.year) {
+            dayCount.value += countDaysInYear(i);
+
+            i += dayCount.dir;
+            if (dayCount.dir < 0) {
+            if (i <= date.year) loop = false;
+            } else {
+            if (i >= date.year) loop = false;
+            }
+        }
+        dayCount.value += countPartialDays(date, dayCount.dir < 0 ? false : true);
+        return dayCount;
     }
 
     function compNpDates(date1, date2) {
-    if (date1.year > date2.year) return 1;
-    if (date1.year === date2.year && date1.month > date2.month) return 1;
-    if (
-        date1.year === date2.year &&
-        date1.month === date2.month &&
-        date1.date > date2.date
-    )
-        return 1;
-    if (
-        date1.year === date2.year &&
-        date1.month === date2.month &&
-        date1.date === date2.date
-    )
-        return 0;
-    return -1;
+        if (date1.year > date2.year) return 1;
+        if (date1.year === date2.year && date1.month > date2.month) return 1;
+        if (
+            date1.year === date2.year &&
+            date1.month === date2.month &&
+            date1.date > date2.date
+        )
+            return 1;
+        if (
+            date1.year === date2.year &&
+            date1.month === date2.month &&
+            date1.date === date2.date
+        )
+            return 0;
+        return -1;
     }
 
     function countADDays(ad) {
-    let date = ad.toString().dateObjects();
-    let refDate = new Date(
-        reference.int.year,
-        reference.int.month - 1,
-        reference.int.date
-    );
-    date = new Date(date.year, date.month - 1, date.date);
-    let timeDiff = date.getTime() - refDate.getTime();
-    let diffDays = parseInt(Math.ceil(timeDiff / (1000 * 3600 * 24)));
-    return {
-        value: Math.abs(diffDays),
-        dir: diffDays < 0 ? -1 : 1,
-        intdate: ad,
-    };
+        let refDate = new Date(
+            reference.int.year,
+            reference.int.month - 1,
+            reference.int.date
+        );
+        let date = new Date(ad.getFullYear(), ad.getMonth(), ad.getDate());
+        let timeDiff = date.getTime() - refDate.getTime();
+        let diffDays = parseInt(Math.ceil(timeDiff / (1000 * 3600 * 24))) + (!isLeapYear(ad.getFullYear()) ? -1 : 0);
+        return {
+            value: Math.abs(diffDays),
+            dir: diffDays < 0 ? -1 : 1,
+            intdate: ad,
+        };
     }
 
     function offsetBSDays(days) {
-    let dayCount = days.value;
-    let dateInAd = new Date(days.intdate);
-    let refDate = JSON.parse(JSON.stringify(reference.np));
-    if (days.value === 0) {
+        let dayCount = days.value;
+        let dateInAd = new Date(days.intdate);
+        let refDate = JSON.parse(JSON.stringify(reference.np));
+        if (dayCount === 0) {
+            return refDate;
+        } else if (days.dir > 0) {
+            refDate.date += dayCount;
+            while (refDate.date > daysInMonth(refDate.year, refDate.month)) {
+
+                refDate.date -= daysInMonth(refDate.year, refDate.month);
+
+                refDate.month++;
+                if (refDate.month > 12) {
+                    refDate.year++;
+                    refDate.month = 1;
+                }
+            }
+        } else {
+            dayCount = Math.abs(dayCount);
+            let days;
+            while (dayCount >= 0) {
+            refDate.month--;
+            if (refDate.month < 1) {
+                refDate.year--;
+                refDate.month = 12;
+            }
+            days = daysInMonth(refDate.year, refDate.month);
+
+            if (dayCount < days) {
+                dayCount = days - dayCount + 1;
+                break;
+            }
+            dayCount -= days;
+            }
+            refDate.date = dayCount;
+        }
+        refDate.day = dateInAd.getDay() + 1;
         return refDate;
-    } else if (days.dir > 0) {
-        refDate.date += dayCount;
-        while (refDate.date > daysInMonth(refDate.year, refDate.month)) {
-        refDate.date -= daysInMonth(refDate.year, refDate.month);
-        refDate.month++;
-        if (refDate.month > 12) {
-            refDate.year++;
-            refDate.month = 1;
-        }
-        }
-    } else {
-        dayCount = Math.abs(dayCount);
-        let days;
-        while (dayCount >= 0) {
-        refDate.month--;
-        if (refDate.month < 1) {
-            refDate.year--;
-            refDate.month = 12;
-        }
-        days = daysInMonth(refDate.year, refDate.month);
-        if (dayCount < days) {
-            dayCount = days - dayCount + 1;
-            break;
-        }
-        dayCount -= days;
-        }
-        refDate.date = dayCount;
-    }
-    refDate.day = dateInAd.getDay() + 1;
-    return refDate;
     }
 
     function offsetADDays(days) {
-    let date = new Date(
-        reference.int.year,
-        reference.int.month - 1,
-        reference.int.date
-    );
-    let shift = days.value * days.dir;
-    date.setDate(date.getDate() + shift);
-    return {
-        year: date.getFullYear(),
-        month: date.getMonth() + 1,
-        date: date.getDate(),
-        day: date.getDay() + 1,
-    };
+        let date = new Date(
+            reference.int.year,
+            reference.int.month - 1,
+            reference.int.date
+        );
+        let shift = days.value * days.dir;
+        date.setDate(date.getDate() + shift);
+        return {
+            year: date.getFullYear(),
+            month: date.getMonth() + 1,
+            date: date.getDate(),
+            day: date.getDay() + 1,
+        };
     }
 
     function ad2bs(ad) {
-    return offsetBSDays(countADDays(ad));
+        const refDate = offsetBSDays(countADDays(ad));
+        return new Date(refDate.year, refDate.month, refDate.date);
     }
 
     function bs2ad(bs) {
-    return offsetADDays(countBSDays(bs));
+        const refDate = offsetADDays(countBSDays(bs));
+        return new Date(refDate.year, refDate.month, refDate.date);
     }
 
     function startDate(year = now.np.year, month = now.np.month) {
-    let string = `${year}-${month}-1`;
-    return bs2ad(string);
+        let string = `${year}-${month}-1`;
+        return bs2ad(string);
     }
 
     function getMonthName(month, nep = true) {
-    //subtract one from month to make array compatible
-    month--;
-    if (month < 0) month += 11;
-    if (month > 11) month -= 12;
-    if (nep) return months_nepali[month];
-    return months[month];
+        //subtract one from month to make array compatible
+        month--;
+        if (month < 0) month += 11;
+        if (month > 11) month -= 12;
+        if (nep) return months_nepali[month];
+        return months[month];
+    }
+
+    function getNepaliDate(date) {
+        return `${date.getFullYear().toString().toNepaliDigits()}-${date.getMonth().toString().toNepaliDigits()}-${date.getDate().toString().toNepaliDigits()}`;
     }
 </script>
 
 <div class="calendar-container">
     <div class="calendar-head">
         <div class="calendar-title">
-            {title}
+            {title} {today_nepali}
         </div>
         <div class="cal-nav">
             <div class="cal-head-left">
@@ -454,8 +469,8 @@
                 </div>
             </div>
             <div class="cal-head-center">
-                <span class="cal-year"> <strong>२०७७/</strong><small>2020</small> </span>
-                <span class="month"><strong>भाद्र</strong></span>
+                <span class="cal-year"> <strong>{today_nepali.getFullYear().toString().toNepaliDigits()}/</strong><small>{today.getFullYear()}</small> </span>
+                <span class="month"><strong>{getMonthName(today_nepali.getMonth())}{today.month}</strong></span>
                 <span class="int-month"><small>(August/September)</small></span>
 
             </div>
