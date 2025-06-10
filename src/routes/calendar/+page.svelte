@@ -1,4 +1,5 @@
 <script>
+    let lang = $state("np");
     const aaja = "आज";
     const title = "नेपाली पात्रो";
     const first = "<<";
@@ -69,7 +70,7 @@
             day: 2,
         },
     };
-
+    const ad_dates = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 365]
     const npdates = {
         2000: [30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31, 365],
         2001: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30, 365],
@@ -176,27 +177,16 @@
     const daysInYear = 365;
 
     const today = new Date();
-    let temp_ad_today = new Date(today)
+    let temp_ad_date = new Date(today)
     let temp_ad_year = $state(today.getFullYear());
     let temp_ad_month = $state(today.getMonth());
 
     const today_nepali = new Date(ad2bs(today));
-    let temp_today_nepali = new Date(today_nepali);
-    let temp_nepali_month = $state(temp_today_nepali.getMonth());
-    let temp_nepali_year = $state(temp_today_nepali.getFullYear());
-    
-    let now = {
-        ad: {
-            year: today.getFullYear(),
-            month: today.getMonth(),
-            date: today.getDate()
-        },
-        np: {
-            year: today_nepali.getFullYear(),
-            month: today_nepali.getMonth(),
-            date: today_nepali.getDate()
-        }
-    };
+    let temp_nepali_date = new Date(today_nepali);
+    let temp_nepali_month = $state(temp_nepali_date.getMonth());
+    let temp_nepali_year = $state(temp_nepali_date.getFullYear());
+
+    let now = {};
 
     String.prototype.toNepaliDigits = function () {
         return this.replace(/[0-9]/g, (match) => {
@@ -267,138 +257,88 @@
         return npdates[year][12];
     }
 
-    function countPartialDays(date, dir) {
-        let count = 0;
-        //add up the days from top up to previous of given date
-        for (let i = 0; i < date.month - 1; i++) {
-            count += npdates[date.year][i];
-        }
-        //add the date of given date to the count
-        count += date.date;
-        //if direction is opposite then complement the count with year sum
-        if (!dir) {
-            //if dir is set then count top to bottom
-            count = npdates[date.year][12] - count + 1;
-        } else {
-            count--;
-        }
-        //return the value of count
-        return count;
-    }
-
-    function daysInMonth(year = now.np.year, month = now.np.month) {
-
-        // let iny = year,
-        //     inm = month;
-        //to make it array compatible subtract one in month
+    function npDaysInMonth(year = today_nepali.getFullYear(), month = today_nepali.getMonth()) {
         month--;
         if (month < 0) {
             month += 11;
             year--;
         }
         let days = npdates[year][month];
-        //console.log(`${iny}-${inm} : ${days} days`);
         return days;
     }
 
+   function adDaysInMonth(year = today.getFullYear(), month = today.getMonth()) {
+        month--;
+        if (month < 0) {
+            month += 11;
+            year--;
+        }
+        let days = 0;
+        if (year % 4 === 0 && month === 1) days = 29;
+        else days = ad_dates[month];
+        return days;
+    }
     function isLeapYear(year) {
         return daysInYear !== countDaysInYear(year);
-
-
     }
 
-    function countBSDays(date) {
-        if (typeof date !== "string") {
-            console.error("Invalid date!");
-            return;
-        }
-
-        let dayCount = {
-            value: 0,
-            dir: 0,
-            npdate: date,
-        };
-
-        //convert the date provided to an json object
-        date = date.toString().dateObjects();
-
-        if (date.year < 2000) {
-            console.error("Invalid date range: Ahead of 2000 BS");
-            return 0;
-        }
-
-        if (date.year > 2099) {
-            console.error("Invalid date range: After 1999 BS");
-            return 0;
-        }
-
-        dayCount.dir = compNpDates(date, reference.np);
-
-        if (dayCount.dir == 0) return dayCount;
-
-        let i =
-            dayCount.dir < 0 ? reference.np.year + dayCount.dir : reference.np.year;
-        let loop = true;
-
-        while (loop && reference.np.year !== date.year) {
-            dayCount.value += countDaysInYear(i);
-
-            i += dayCount.dir;
-            if (dayCount.dir < 0) {
-            if (i <= date.year) loop = false;
-            } else {
-            if (i >= date.year) loop = false;
-            }
-        }
-        dayCount.value += countPartialDays(date, dayCount.dir < 0 ? false : true);
-        return dayCount;
-    }
-
-    function compNpDates(date1, date2) {
-        if (date1.year > date2.year) return 1;
-        if (date1.year === date2.year && date1.month > date2.month) return 1;
+    function compNpDates(date, ref) {
+        const year1 = date.getFullYear();
+        const year2 = ref.year;
+        const month1 = date.getMonth();
+        const month2 = ref.month;
+        const date1 = date.getDate();
+        const date2 = ref.date;
+        if (year1 > year2) return 1;
+        if (year1 === year2 && month1 > month2) return 1;
         if (
-            date1.year === date2.year &&
-            date1.month === date2.month &&
-            date1.date > date2.date
+            year1 === year2 &&
+            month1 === month2 &&
+            date1 > date2
         )
             return 1;
         if (
-            date1.year === date2.year &&
-            date1.month === date2.month &&
-            date1.date === date2.date
+            year1 === year2 &&
+            month1 === month2 &&
+            date1 === date2
         )
             return 0;
         return -1;
     }
 
-    function countADDays(ad) {
-        let refDate = new Date(
-            reference.int.year,
-            reference.int.month - 1,
-            reference.int.date
-        );
-        let date = new Date(ad.getFullYear(), ad.getMonth(), ad.getDate());
+    function countDaysDiff(date, isBS = false) {
+        let refDate = isBS ? 
+            new Date(reference.np.year, reference.np.month - 1, reference.np.date) : 
+            new Date(reference.int.year, reference.int.month - 1, reference.int.date);
         let timeDiff = date.getTime() - refDate.getTime();
-        let diffDays = parseInt(Math.ceil(timeDiff / (1000 * 3600 * 24))) + (!isLeapYear(ad.getFullYear()) ? -1 : 0);
+        let diffDays = parseInt(Math.ceil(timeDiff / (1000 * 3600 * 24))) + (!isLeapYear(date.getFullYear()) ? -1 : 0);
         return {
             value: Math.abs(diffDays),
             dir: diffDays < 0 ? -1 : 1,
-            intdate: ad,
+            date: date,
         };
     }
 
-    function offsetBSDays(days) {
+    function daysInAMonth(year, month, isBS = false) {
+        if (isBS) {
+            return adDaysInMonth(year, month);
+        }
+        else {
+            return npDaysInMonth(year, month);
+        }
+    }
+
+    function offsetDays(days, isBS = false) {
         let dayCount = days.value;
-        let dateInAd = new Date(days.intdate);
-        let refDate = JSON.parse(JSON.stringify(reference.np));
+        let date = new Date(days.date);
+        let refDate = isBS ? structuredClone(reference.np) : structuredClone(reference.int);
         if (dayCount === 0) {
             return refDate;
         } else if (days.dir > 0) {
             refDate.date += dayCount;
-            while (refDate.date > daysInMonth(refDate.year, refDate.month)) {
+            while (refDate.date > daysInAMonth(refDate.year, refDate.month, isBS)) {
 
-                refDate.date -= daysInMonth(refDate.year, refDate.month);
+                refDate.date -= daysInAMonth(refDate.year, refDate.month, isBS);
 
                 refDate.month++;
                 if (refDate.month > 12) {
@@ -410,49 +350,33 @@
             dayCount = Math.abs(dayCount);
             let days;
             while (dayCount >= 0) {
-            refDate.month--;
-            if (refDate.month < 1) {
-                refDate.year--;
-                refDate.month = 12;
-            }
-            days = daysInMonth(refDate.year, refDate.month);
+                refDate.month--;
+                if (refDate.month < 1) {
+                    refDate.year--;
+                    refDate.month = 12;
+                }
+                days = daysInAMonth(refDate.year, refDate.month, isBS);
 
-            if (dayCount < days) {
-                dayCount = days - dayCount + 1;
-                break;
-            }
-            dayCount -= days;
+                if (dayCount < days) {
+                    dayCount = days - dayCount + 1;
+                    break;
+                }
+                dayCount -= days;
             }
             refDate.date = dayCount;
         }
-        refDate.day = dateInAd.getDay() + 1;
+        refDate.day = date.getDay() + 1;
         return refDate;
     }
 
-    function offsetADDays(days) {
-        let date = new Date(
-            reference.int.year,
-            reference.int.month - 1,
-            reference.int.date
-        );
-        let shift = days.value * days.dir;
-        date.setDate(date.getDate() + shift);
-        return {
-            year: date.getFullYear(),
-            month: date.getMonth() + 1,
-            date: date.getDate(),
-            day: date.getDay() + 1,
-        };
-    }
-
     function ad2bs(ad) {
-        const refDate = offsetBSDays(countADDays(ad));
+        const refDate = offsetDays(countDaysDiff(ad), true);
         return new Date(refDate.year, refDate.month - 1, refDate.date);
     }
 
     function bs2ad(bs) {
-        const refDate = offsetADDays(countBSDays(bs));
-        return new Date(refDate.year, refDate.month, refDate.date);
+        const refDate = offsetDays(countDaysDiff(bs, true));
+        return new Date(refDate.year, refDate.month - 1, refDate.date);
     }
 
     function startDate(year = now.np.year, month = now.np.month) {
@@ -462,7 +386,7 @@
 
     function getMonthName(month, nep = true) {
         if (month < 0) month += 12;
-        if (month > 12) month -= 12;
+        if (month > 11) month -= 12;
         if (nep) return months_nepali[month];
         return months[month];
     }
@@ -472,22 +396,40 @@
     }
 
     let changeToPreNepaliMonth = () => {
-        temp_today_nepali.setMonth(temp_today_nepali.getMonth() - 1);
-
-        temp_nepali_month = temp_today_nepali.getMonth();
-        temp_nepali_year = temp_today_nepali.getFullYear();
+        temp_nepali_date.setMonth(temp_nepali_date.getMonth() - 1);
+        temp_ad_date = new Date(bs2ad(temp_nepali_date));
+        temp_nepali_month = temp_nepali_date.getMonth();
+        temp_nepali_year = temp_nepali_date.getFullYear();
+        temp_ad_year = temp_ad_date.getFullYear();
     }
     let changeToNextNepaliMonth = () => {
-        temp_today_nepali.setMonth(temp_today_nepali.getMonth() + 1);
-        temp_nepali_month = temp_today_nepali.getMonth();
-        temp_nepali_year = temp_today_nepali.getFullYear();
+        temp_nepali_date.setMonth(temp_nepali_date.getMonth() + 1);
+        temp_ad_date = new Date(bs2ad(temp_nepali_date));
+        temp_nepali_month = temp_nepali_date.getMonth();
+        temp_nepali_year = temp_nepali_date.getFullYear();
+        temp_ad_year = temp_ad_date.getFullYear();
     }
 
     let refreshToday = () => {
-        temp_today_nepali = new Date(today_nepali);
+        temp_nepali_date = new Date(today_nepali);
         temp_ad_year = today.getFullYear();
         temp_nepali_month = today_nepali.getMonth();
         temp_nepali_year = today_nepali.getFullYear();
+    }
+
+    let getWeekDays = () => {
+        if (lang == "en") return days;
+        else return days_nepali;
+    }
+
+    let getInitialInactiveDays = () => {
+        return [1, 2];
+    }
+    let getActiveDays = () => {
+        return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
+    }
+    let getLastInactiveDays = () => {
+        return [1, 2];
     }
 
 </script>
@@ -495,7 +437,7 @@
 <div class="calendar-container">
     <div class="calendar-head">
         <div class="calendar-title">
-            {title} {temp_today_nepali}
+            {title} 
         </div>
         <div class="cal-nav">
             <div class="cal-head-left">
@@ -507,7 +449,6 @@
                 <span class="cal-year"> <strong>{temp_nepali_year.toString().toNepaliDigits()}/</strong><small>{temp_ad_year}</small> </span>
                 <span class="month"><strong>{getMonthName(temp_nepali_month)}</strong></span>
                 <span class="int-month"><small>({getMonthName(temp_nepali_month + 3, false)}/{getMonthName(temp_nepali_month + 4, false)})</small></span>
-
             </div>
             <div class="cal-head-right">
                 <div class="cal-btn cal-prev" onclick={changeToPreNepaliMonth}> 
@@ -521,225 +462,34 @@
     </div>
             <div class="calendar-body">
                 <div class="week">
-                    <div class="days-name">SUN</div>
-                    <div class="days-name">MON</div>
-                    <div class="days-name">TUE</div>
-                    <div class="days-name">WED</div>
-                    <div class="days-name">THU</div>
-                    <div class="days-name">FRI</div>
-                    <div class="days-name">SAT</div>
+                    {#each getWeekDays() as day}
+                        <div class="days-name">{day}</div>
+                    {/each}
                 </div>
                 <div class="days">
-                    <div class="day inactive">
-                        <span class="np-date">01</span>
-                        <span class="int-date">1</span>
-                        <span class="task">something</span>
-                    </div>
-                    <div class="day inactive">
-                        <span class="np-date">02</span>
-                        <span class="int-date">2</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day inactive">
-                        <span class="np-date">03</span>
-                        <span class="int-date">3</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">04</span>
-                        <span class="int-date">4</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">05</span>
-                        <span class="int-date">5</span>
-                        <span class="task">something</span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">06</span>
-                        <span class="int-date">6</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">07</span>
-                        <span class="int-date">7</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">08</span>
-                        <span class="int-date">8</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">09</span>
-                        <span class="int-date">9</span>
-                        <span class="task">something</span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">10</span>
-                        <span class="int-date">10</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">11</span>
-                        <span class="int-date">11</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">12</span>
-                        <span class="int-date">12</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">13</span>
-                        <span class="int-date">13</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">14</span>
-                        <span class="int-date">14</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">15</span>
-                        <span class="int-date">15</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day today">
-                        <span class="np-date">16</span>
-                        <span class="int-date">16</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">17</span>
-                        <span class="int-date">17</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">18</span>
-                        <span class="int-date">18</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">19</span>
-                        <span class="int-date">19</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">20</span>
-                        <span class="int-date">20</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">21</span>
-                        <span class="int-date">21</span>
-                        <span class="task">something</span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">22</span>
-                        <span class="int-date">22</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">23</span>
-                        <span class="int-date">23</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">24</span>
-                        <span class="int-date">24</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">25</span>
-                        <span class="int-date">25</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">26</span>
-                        <span class="int-date">26</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">27</span>
-                        <span class="int-date">27</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">28</span>
-                        <span class="int-date">28</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">29</span>
-                        <span class="int-date">29</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">30</span>
-                        <span class="int-date">30</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">31</span>
-                        <span class="int-date">31</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">32</span>
-                        <span class="int-date">32</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">33</span>
-                        <span class="int-date">33</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">34</span>
-                        <span class="int-date">34</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">35</span>
-                        <span class="int-date">35</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">36</span>
-                        <span class="int-date">36</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">37</span>
-                        <span class="int-date">37</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">38</span>
-                        <span class="int-date">38</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day">
-                        <span class="np-date">39</span>
-                        <span class="int-date">39</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day inactive">
-                        <span class="np-date">1</span>
-                        <span class="int-date">1</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day inactive">
-                        <span class="np-date">2</span>
-                        <span class="int-date">2</span>
-                        <span class="task"></span>
-                    </div>
-                    <div class="day inactive">
-                        <span class="np-date">3</span>
-                        <span class="int-date">3</span>
-                        <span class="task"></span>
-                    </div>
+                    {#each getInitialInactiveDays() as day}
+                        <div class="day inactive">
+                            <span class="np-date">{day.toString().toNepaliDigits()}</span>
+                            <span class="int-date">{day}</span>
+                            <span class="task"></span>
+                        </div>
+                    {/each}
+                    {#each getActiveDays() as day}
+                        <div class="day">
+                            <span class="np-date">{day.toString().toNepaliDigits()}</span>
+                            <span class="int-date">{day}</span>
+                            <span class="task"></span>
+                        </div>
+                    {/each}
+                    
+                    {#each getLastInactiveDays() as day}
+                        <div class="day inactive">
+                            <span class="np-date">{day.toString().toNepaliDigits()}</span>
+                            <span class="int-date">{day}</span>
+                            <span class="task"></span>
+                        </div>
+                    {/each}
+                    
                 </div>
             </div>
             <div class="calendar-footer">
