@@ -178,8 +178,8 @@
 
     const today = new Date();
     let temp_ad_date = new Date(today)
-    let temp_ad_year = $state(today.getFullYear());
-    let temp_ad_month = $state(today.getMonth());
+    let temp_ad_year = $state(temp_ad_date.getFullYear());
+    let temp_ad_month = $state(temp_ad_date.getMonth());
 
     const today_nepali = new Date(ad2bs(today));
     let temp_nepali_date = new Date(today_nepali);
@@ -397,22 +397,26 @@
 
     let changeToPreNepaliMonth = () => {
         temp_nepali_date.setMonth(temp_nepali_date.getMonth() - 1);
-        temp_ad_date = new Date(bs2ad(temp_nepali_date));
-        temp_nepali_month = temp_nepali_date.getMonth();
-        temp_nepali_year = temp_nepali_date.getFullYear();
-        temp_ad_year = temp_ad_date.getFullYear();
+        alterTemps();
     }
     let changeToNextNepaliMonth = () => {
         temp_nepali_date.setMonth(temp_nepali_date.getMonth() + 1);
+        alterTemps();
+    }
+    
+    function alterTemps() {
         temp_ad_date = new Date(bs2ad(temp_nepali_date));
         temp_nepali_month = temp_nepali_date.getMonth();
         temp_nepali_year = temp_nepali_date.getFullYear();
+        temp_ad_month = temp_ad_date.getMonth();
         temp_ad_year = temp_ad_date.getFullYear();
     }
 
     let refreshToday = () => {
-        temp_nepali_date = new Date(today_nepali);
+        temp_ad_date = new Date(today);
+        temp_ad_month = temp_ad_date.getMonth();
         temp_ad_year = today.getFullYear();
+        temp_nepali_date = new Date(today_nepali);
         temp_nepali_month = today_nepali.getMonth();
         temp_nepali_year = today_nepali.getFullYear();
     }
@@ -421,15 +425,49 @@
         if (lang == "en") return days;
         else return days_nepali;
     }
+    function range(start, stop, step = 1) {
+        if (stop === undefined) {
+            stop = start;
+            start = 0;
+        }
+        const result = [];
+        for (let i = start; i < stop; i += step) {
+            result.push(i);
+        }
+        return result;
+    }
 
     let getInitialInactiveDays = () => {
-        return [1, 2];
+        const this_year = lang == "en" ? temp_ad_year : temp_nepali_year;
+        const this_month = lang == "en" ? temp_ad_month : temp_nepali_month;
+        const first_week_day = new Date(this_year, this_month, 1).getDay();
+        let return_array = [];
+        for (const i in range(0, first_week_day)) {
+            return_array.push("");
+        }
+        return return_array;
     }
     let getActiveDays = () => {
-        return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
+        const this_year = lang == "en" ? temp_ad_year : temp_nepali_year;
+        const this_month = lang == "en" ? temp_ad_month : temp_nepali_month;
+        const days_in_month = lang == "en" ? ad_dates[this_month] : npdates[this_year][this_month];
+        return range(1, days_in_month);
     }
     let getLastInactiveDays = () => {
-        return [1, 2];
+        const this_year = lang == "en" ? temp_ad_year : temp_nepali_year;
+        const this_month = lang == "en" ? temp_ad_month : temp_nepali_month;
+        const first_week_day = new Date(this_year, this_month, 1).getDay();
+        const days_in_month = lang == "en" ? ad_dates[this_month] : npdates[this_year][this_month];
+        let return_array = [];
+        for (const i in range(0, 43 - (first_week_day + days_in_month))) {
+            return_array.push("");
+        }
+        return return_array;
+    }
+
+    let isToday = (day) => {
+        const yesToday = day == today.getDate() && today.getFullYear() === temp_ad_year && today.getMonth() === temp_ad_month;
+        return yesToday;
     }
 
 </script>
@@ -475,7 +513,7 @@
                         </div>
                     {/each}
                     {#each getActiveDays() as day}
-                        <div class="day">
+                        <div class="day {isToday(day) ? "today" : ""}">
                             <span class="np-date">{day.toString().toNepaliDigits()}</span>
                             <span class="int-date">{day}</span>
                             <span class="task"></span>
