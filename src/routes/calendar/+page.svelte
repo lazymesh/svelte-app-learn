@@ -1,4 +1,5 @@
 <script>
+    const aaja = "आज";
     const title = "नेपाली पात्रो";
     const first = "<<";
     const prev = "<";
@@ -175,12 +176,27 @@
     const daysInYear = 365;
 
     const today = new Date();
-    const today_nepali = ad2bs(today);
-    let temp_today_nepali = today_nepali;
+    let temp_ad_today = new Date(today)
+    let temp_ad_year = $state(today.getFullYear());
+    let temp_ad_month = $state(today.getMonth());
+
+    const today_nepali = new Date(ad2bs(today));
+    let temp_today_nepali = new Date(today_nepali);
     let temp_nepali_month = $state(temp_today_nepali.getMonth());
     let temp_nepali_year = $state(temp_today_nepali.getFullYear());
-    let temp_ad_year = $state(today.getFullYear());
-    let now = {};
+    
+    let now = {
+        ad: {
+            year: today.getFullYear(),
+            month: today.getMonth(),
+            date: today.getDate()
+        },
+        np: {
+            year: today_nepali.getFullYear(),
+            month: today_nepali.getMonth(),
+            date: today_nepali.getDate()
+        }
+    };
 
     String.prototype.toNepaliDigits = function () {
         return this.replace(/[0-9]/g, (match) => {
@@ -431,7 +447,7 @@
 
     function ad2bs(ad) {
         const refDate = offsetBSDays(countADDays(ad));
-        return new Date(refDate.year, refDate.month, refDate.date);
+        return new Date(refDate.year, refDate.month - 1, refDate.date);
     }
 
     function bs2ad(bs) {
@@ -445,10 +461,8 @@
     }
 
     function getMonthName(month, nep = true) {
-        //subtract one from month to make array compatible
-        month--;
-        if (month < 0) month += 11;
-        if (month > 11) month -= 12;
+        if (month < 0) month += 12;
+        if (month > 12) month -= 12;
         if (nep) return months_nepali[month];
         return months[month];
     }
@@ -459,12 +473,21 @@
 
     let changeToPreNepaliMonth = () => {
         temp_today_nepali.setMonth(temp_today_nepali.getMonth() - 1);
+
         temp_nepali_month = temp_today_nepali.getMonth();
         temp_nepali_year = temp_today_nepali.getFullYear();
     }
     let changeToNextNepaliMonth = () => {
         temp_today_nepali.setMonth(temp_today_nepali.getMonth() + 1);
         temp_nepali_month = temp_today_nepali.getMonth();
+        temp_nepali_year = temp_today_nepali.getFullYear();
+    }
+
+    let refreshToday = () => {
+        temp_today_nepali = new Date(today_nepali);
+        temp_ad_year = today.getFullYear();
+        temp_nepali_month = today_nepali.getMonth();
+        temp_nepali_year = today_nepali.getFullYear();
     }
 
 </script>
@@ -472,15 +495,12 @@
 <div class="calendar-container">
     <div class="calendar-head">
         <div class="calendar-title">
-            {title}
+            {title} {temp_today_nepali}
         </div>
         <div class="cal-nav">
             <div class="cal-head-left">
-                <div class="cal-btn cal-prev-year"> 
-                    <small>{first}</small>
-                </div>
-                <div class="cal-btn cal-prev" onclick={changeToPreNepaliMonth}> 
-                    <small>{prev}</small>
+                <div class="cal-btn cal-prev" onclick={refreshToday}> 
+                    <small>{aaja}</small>
                 </div>
             </div>
             <div class="cal-head-center">
@@ -490,11 +510,11 @@
 
             </div>
             <div class="cal-head-right">
+                <div class="cal-btn cal-prev" onclick={changeToPreNepaliMonth}> 
+                    <small>{prev}</small>
+                </div>
                 <div class="cal-btn cal-next" onclick={changeToNextNepaliMonth}>
                     <small>{next}</small>
-                </div>
-                <div class="cal-btn cal-next-year">
-                    <small>{last}</small>
                 </div>
             </div>
         </div>
