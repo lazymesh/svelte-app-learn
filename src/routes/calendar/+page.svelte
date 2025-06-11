@@ -1,4 +1,50 @@
 <script>
+    String.prototype.toNepaliDigits = function () {
+        return this.replace(/[0-9]/g, (match) => {
+            return nepali_digits[match];
+        });
+    };
+
+    String.prototype.revNepaliNumber = function () {
+        return this.replace(/['०','१','२','३','४','५','६','७','८','९']/g, (match) => {
+            return nepali_digits.findIndex((element) => element == match);
+        });
+    };
+
+    String.prototype.dateObjects = function (monthFirst = true) {
+        date = {};
+        //parse the element of dates
+        let data = /(\d+)[/.-](\d+)[/.-](\d+)/gi.exec(this.toString());
+        data.forEach((elem) => {
+            elem = parseInt(elem);
+            if (elem > 32) {
+            date.year = elem;
+            return;
+            }
+            if (monthFirst) {
+            if (typeof date.month == "undefined") {
+                date.month = elem;
+            }
+            date.date = elem;
+            } else {
+            if (typeof date.date == "undefined") {
+                date.date = elem;
+            }
+            date.month = elem;
+            }
+        });
+        return date;
+    };
+
+    Date.prototype.format = function (seprator = "-") {
+        return (
+            this.getFullYear() +
+            seprator +
+            (this.getMonth() + 1).toString().padStart(2, 0) +
+            seprator +
+            this.getDate().toString().padStart(2, 0)
+        );
+    };
     let lang = $state("np");
     const aaja = "आज";
     const title = "नेपाली पात्रो";
@@ -176,65 +222,26 @@
 
     const daysInYear = 365;
 
-    const today = new Date();
+    const today = new Date(2025, 5, 11);
     let temp_ad_date = new Date(today)
     let temp_ad_year = $state(temp_ad_date.getFullYear());
     let temp_ad_month = $state(temp_ad_date.getMonth());
 
     const today_nepali = structuredClone(ad2bs(today));
-    // console.log(today_nepali, today);
+    //console.log(today_nepali, today);
     let temp_nepali_date = structuredClone(today_nepali);
     let temp_nepali_month = $state(temp_nepali_date.month);
     let temp_nepali_year = $state(temp_nepali_date.year);
 
+
+    let englishDatesInNepaliMonth = [];
+    getEnglishDatesForNepaliMonth();
+    
     let now = {};
 
-    String.prototype.toNepaliDigits = function () {
-        return this.replace(/[0-9]/g, (match) => {
-            return nepali_digits[match];
-        });
-    };
-
-    String.prototype.revNepaliNumber = function () {
-        return this.replace(/['०','१','२','३','४','५','६','७','८','९']/g, (match) => {
-            return nepali_digits.findIndex((element) => element == match);
-        });
-    };
-
-    String.prototype.dateObjects = function (monthFirst = true) {
-        date = {};
-        //parse the element of dates
-        let data = /(\d+)[/.-](\d+)[/.-](\d+)/gi.exec(this.toString());
-        data.forEach((elem) => {
-            elem = parseInt(elem);
-            if (elem > 32) {
-            date.year = elem;
-            return;
-            }
-            if (monthFirst) {
-            if (typeof date.month == "undefined") {
-                date.month = elem;
-            }
-            date.date = elem;
-            } else {
-            if (typeof date.date == "undefined") {
-                date.date = elem;
-            }
-            date.month = elem;
-            }
-        });
-        return date;
-    };
-
-    Date.prototype.format = function (seprator = "-") {
-    return (
-        this.getFullYear() +
-        seprator +
-        (this.getMonth() + 1).toString().padStart(2, 0) +
-        seprator +
-        this.getDate().toString().padStart(2, 0)
-    );
-    };
+    let display_nepali_date = temp_nepali_year.toString().toNepaliDigits() + " " + 
+        getMonthName(temp_nepali_month) + " " + 
+        temp_nepali_date.date.toString().toNepaliDigits() + " ";
 
     function formatDate(date, sep = "-") {
         return `${date.year}${sep}${date.month}${sep}${date.date}`;
@@ -319,7 +326,7 @@
     }
 
     function offsetDays(days, isBS = false) {
-        console.log(days);
+        //console.log(days);
         let dayCount = days.value;
         let date = new Date(days.date);
         let refDate = isBS ? structuredClone(reference.np) : structuredClone(reference.int);
@@ -327,9 +334,9 @@
         if (dayCount === 0) {
             return refDate;
         } else if (days.dir > 0) {
-            console.log(refDate);
+            //console.log(refDate);
             refDate.date += dayCount;
-            console.log(refDate);
+            //console.log(refDate);
             while (refDate.date > daysInAMonth(refDate.year, refDate.month, isBS)) {
                 if (refDate.date > countDaysInYear(refDate.year, isBS)) {
                     refDate.date -= countDaysInYear(refDate.year, isBS);
@@ -365,18 +372,17 @@
             }
             refDate.date = dayCount;
         }
+        // todo: check following logic as it is just added to make it work
+        refDate.date -= 1
         return refDate;
     }
 
     function ad2bs(ad) {
-        console.log("aaaaaaaa");
         const refDate = offsetDays(countDaysDiff(ad), true);
-        console.log(" after changed final ", refDate);
         return refDate;
     }
 
     function bs2ad(bs) {
-        console.log("bbbbbbbb");
         const refDate = offsetDays(countDaysDiff(bs, true));
         return refDate;
     }
@@ -386,9 +392,14 @@
         return bs2ad(string);
     }
 
-    function getMonthName(month, nep = true) {
+    function validMonth(month) {
         if (month < 0) month += 12;
         if (month > 11) month -= 12;
+        return month;
+    }
+
+    function getMonthName(month, nep = true) {
+        month = validMonth(month);
         if (nep) return months_nepali[month];
         return months[month];
     }
@@ -421,6 +432,7 @@
         temp_nepali_year = temp_nepali_date.year;
         temp_ad_month = temp_ad_date.getMonth();
         temp_ad_year = temp_ad_date.getFullYear();
+        getEnglishDatesForNepaliMonth();
     }
 
     let refreshToday = () => {
@@ -430,6 +442,7 @@
         temp_nepali_date = structuredClone(today_nepali);
         temp_nepali_month = today_nepali.month;
         temp_nepali_year = today_nepali.year;
+        getEnglishDatesForNepaliMonth();
     }
 
     let getWeekDays = () => {
@@ -449,8 +462,9 @@
     }
 
     function calculateEmptyDays() {
-        const first_week_day = new Date(temp_ad_year, temp_ad_month - 1, 1).getDay();
-        const day_in_nepali = ad2bs(new Date(temp_ad_year, temp_ad_month - 1, 1));
+        const secondEnglishMonth = new Date(temp_ad_year, validMonth(temp_nepali_month + 4), 1);
+        const first_week_day = secondEnglishMonth.getDay();
+        const day_in_nepali = ad2bs(secondEnglishMonth);
         let empty_days = 8 - ((day_in_nepali.date - first_week_day) % 7);
         if (empty_days == 7) empty_days = 0;
         if (empty_days == 8) empty_days = 1;
@@ -486,10 +500,23 @@
         return return_array;
     }
 
+    function getEnglishDatesForNepaliMonth() {
+        // todo: make correction for temp_ad_year too when month changes
+        const firstEnglishMonthDays = adDaysInMonth(temp_ad_year, validMonth(temp_nepali_month + 3));
+        const firstDayOfSecondEnglishMonth = new Date(temp_ad_year, validMonth(temp_nepali_month + 4), 1);
+        const day_in_nepali = ad2bs(firstDayOfSecondEnglishMonth);
+        const daysInNepaliMonth = npDaysInMonth(temp_nepali_year, temp_nepali_month);
+        // + 2 is added as the englishDatesInNepaliMonth array is indexed from 0
+        for (let i = firstEnglishMonthDays - day_in_nepali.date + 2; i <= firstEnglishMonthDays; i++) {
+            englishDatesInNepaliMonth.push(i);
+        }
+        for (let i = 1; i <= daysInNepaliMonth - day_in_nepali.date + 1; i++) {
+            englishDatesInNepaliMonth.push(i);
+        }
+    }
+
     let getEnglishDateUsingNepaliDay = (day) => {
-        const nepali_date = new Date(temp_nepali_year, temp_nepali_month - 1, day);
-        const ad_date = bs2ad(nepali_date);
-        return ad_date.date;
+        return englishDatesInNepaliMonth[day - 1];
     }
 
     let isToday = (day) => {
@@ -497,12 +524,19 @@
         return yesToday;
     }
 
+    let setDisplayToday = (day) => {
+        display_nepali_date = temp_nepali_year.toString().toNepaliDigits() + " " + 
+        getMonthName(temp_nepali_month) + " " + 
+        day.toString().toNepaliDigits() + " " 
+        ;
+    }
+
 </script>
 
 <div class="calendar-container">
     <div class="calendar-head">
         <div class="calendar-title">
-            {title} {temp_nepali_month} {temp_ad_month}
+            {title}
         </div>
         <div class="cal-nav">
             <div class="cal-head-left">
@@ -540,10 +574,10 @@
                 </div>
             {/each}
             {#each getActiveDays() as day}
-                <div class="day {isToday(day) ? "today" : ""}">
+                <div class="day {isToday(day) ? "today" : ""}" onclick={() => setDisplayToday(day)}>
                     <span class="np-date">{day.toString().toNepaliDigits()}</span>
                     <span class="int-date">{getEnglishDateUsingNepaliDay(day)}</span>
-                    <span class="task"></span>
+                    <span class="task">{getEnglishDateUsingNepaliDay(day) === 1 ? getMonthName(validMonth(temp_nepali_month + 4), false) : ""}</span>
                 </div>
             {/each}
             
@@ -559,7 +593,7 @@
     </div>
     <div class="calendar-footer">
         <div class="cal-foot-left"><strong class="footer-time">०२:१५:४५ पुर्वान्ह</strong></div>
-        <div class="cal-foot-center"><strong class="footer-today">२०७७ - असार - १६ मंगलवार</strong></div>
+        <div class="cal-foot-center"><strong class="footer-today">{display_nepali_date}</strong></div>
         <div class="cal-foot-right">
             <div class="cal-copy">Calendar</div>
         </div>
