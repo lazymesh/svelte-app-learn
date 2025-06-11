@@ -442,39 +442,45 @@
             start = 0;
         }
         const result = [];
-        for (let i = start; i < stop; i += step) {
+        for (let i = start; i <= stop; i += step) {
             result.push(i);
         }
         return result;
     }
 
-    let getInitialInactiveDays = () => {
-        const this_year = lang == "en" ? temp_ad_year : temp_nepali_year;
-        const this_month = lang == "en" ? temp_ad_month : temp_nepali_month;
+    function calculateEmptyDays() {
         const first_week_day = new Date(temp_ad_year, temp_ad_month, 1).getDay();
         const day_in_nepali = ad2bs(new Date(temp_ad_year, temp_ad_month, 1));
         let empty_days = 8 - ((day_in_nepali.date - first_week_day) % 7);
         if (empty_days == 7) empty_days = 0;
         if (empty_days == 8) empty_days = 1;
+        return empty_days;
+    }
+    function daysInTempMonth() {
+        const this_year = lang == "en" ? temp_ad_year : temp_nepali_year;
+        const this_month = lang == "en" ? temp_ad_month : temp_nepali_month;
+        const days_in_month = lang == "en" ? ad_dates[this_month] : npdates[this_year][this_month];
+        return days_in_month;
+    }
+    let getInitialInactiveDays = () => {
+        const empty_days = calculateEmptyDays();
         let return_array = [];
-        for (const i in range(0, empty_days)) {
+        for (const i in range(1, empty_days)) {
             return_array.push("");
         }
         return return_array;
     }
     let getActiveDays = () => {
-        const this_year = lang == "en" ? temp_ad_year : temp_nepali_year;
-        const this_month = lang == "en" ? temp_ad_month : temp_nepali_month;
-        const days_in_month = lang == "en" ? ad_dates[this_month] : npdates[this_year][this_month];
+        const days_in_month = daysInTempMonth();
         return range(1, days_in_month);
     }
     let getLastInactiveDays = () => {
-        const this_year = lang == "en" ? temp_ad_year : temp_nepali_year;
-        const this_month = lang == "en" ? temp_ad_month : temp_nepali_month;
-        const first_week_day = new Date(this_year, this_month, 1).getDay();
-        const days_in_month = lang == "en" ? ad_dates[this_month] : npdates[this_year][this_month];
+        const days_in_month = daysInTempMonth();
+        const empty_days = calculateEmptyDays();
         let return_array = [];
-        for (const i in range(0, 43 - (first_week_day + days_in_month))) {
+        let last_empty_cells = 42 - (days_in_month + empty_days);
+        last_empty_cells = last_empty_cells > 6 ? last_empty_cells % 7 : last_empty_cells;
+        for (const i in range(1, last_empty_cells)) {
             return_array.push("");
         }
         return return_array;
@@ -519,46 +525,46 @@
             </div>
         </div>
     </div>
-            <div class="calendar-body">
-                <div class="week">
-                    {#each getWeekDays() as day}
-                        <div class="days-name">{day}</div>
-                    {/each}
-                </div>
-                <div class="days">
-                    {#each getInitialInactiveDays() as day}
-                        <div class="day inactive">
-                            <span class="np-date">{day.toString().toNepaliDigits()}</span>
-                            <span class="int-date">{day}</span>
-                            <span class="task"></span>
-                        </div>
-                    {/each}
-                    {#each getActiveDays() as day}
-                        <div class="day {isToday(day) ? "today" : ""}">
-                            <span class="np-date">{day.toString().toNepaliDigits()}</span>
-                            <span class="int-date">{getEnglishDateUsingNepaliDay(day)}</span>
-                            <span class="task"></span>
-                        </div>
-                    {/each}
-                    
-                    {#each getLastInactiveDays() as day}
-                        <div class="day inactive">
-                            <span class="np-date">{day.toString().toNepaliDigits()}</span>
-                            <span class="int-date">{day}</span>
-                            <span class="task"></span>
-                        </div>
-                    {/each}
-                    
-                </div>
-            </div>
-            <div class="calendar-footer">
-                <div class="cal-foot-left"><strong class="footer-time">०२:१५:४५ पुर्वान्ह</strong></div>
-                <div class="cal-foot-center"><strong class="footer-today">२०७७ - असार - १६ मंगलवार</strong></div>
-                <div class="cal-foot-right">
-                    <div class="cal-copy">Calendar</div>
-                </div>
-            </div>
+    <div class="calendar-body">
+        <div class="week">
+            {#each getWeekDays() as day}
+                <div class="days-name">{day}</div>
+            {/each}
         </div>
+        <div class="days">
+            {#each getInitialInactiveDays() as day}
+                <div class="day inactive">
+                    <span class="np-date">{day.toString().toNepaliDigits()}</span>
+                    <span class="int-date">{day}</span>
+                    <span class="task"></span>
+                </div>
+            {/each}
+            {#each getActiveDays() as day}
+                <div class="day {isToday(day) ? "today" : ""}">
+                    <span class="np-date">{day.toString().toNepaliDigits()}</span>
+                    <span class="int-date">{getEnglishDateUsingNepaliDay(day)}</span>
+                    <span class="task"></span>
+                </div>
+            {/each}
+            
+            {#each getLastInactiveDays() as day}
+                <div class="day inactive">
+                    <span class="np-date">{day.toString().toNepaliDigits()}</span>
+                    <span class="int-date">{day}</span>
+                    <span class="task"></span>
+                </div>
+            {/each}
+            
+        </div>
+    </div>
+    <div class="calendar-footer">
+        <div class="cal-foot-left"><strong class="footer-time">०२:१५:४५ पुर्वान्ह</strong></div>
+        <div class="cal-foot-center"><strong class="footer-today">२०७७ - असार - १६ मंगलवार</strong></div>
+        <div class="cal-foot-right">
+            <div class="cal-copy">Calendar</div>
+        </div>
+    </div>
+</div>
 
 
 <style>
