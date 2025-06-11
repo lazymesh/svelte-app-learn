@@ -372,6 +372,7 @@
 
     function ad2bs(ad) {
         const refDate = offsetDays(countDaysDiff(ad), true);
+        refDate.date = refDate.date > 1 ? refDate.date - 1 : refDate.date;
         return refDate;
     }
 
@@ -399,11 +400,13 @@
     let changeToPreNepaliMonth = () => {
         const nepali_ref_date = new Date(temp_nepali_date.year, temp_nepali_date.month, temp_nepali_date.date);
         nepali_ref_date.setMonth(temp_nepali_date.month - 1);
+        temp_ad_date.setMonth(temp_ad_date.getMonth() - 1);
         alterTemps(nepali_ref_date, temp_nepali_date.day);
     }
     let changeToNextNepaliMonth = () => {
         const nepali_ref_date = new Date(temp_nepali_date.year, temp_nepali_date.month, temp_nepali_date.date);
         nepali_ref_date.setMonth(temp_nepali_date.month + 1);
+        temp_ad_date.setMonth(temp_ad_date.getMonth() + 1);
         alterTemps(nepali_ref_date, temp_nepali_date.day);
     }
     
@@ -416,8 +419,6 @@
         }
         temp_nepali_month = temp_nepali_date.month;
         temp_nepali_year = temp_nepali_date.year;
-        const ad_ref_date = bs2ad(nepali_ref_date);
-        temp_ad_date = new Date(ad_ref_date.year, ad_ref_date.month, ad_ref_date.date);
         temp_ad_month = temp_ad_date.getMonth();
         temp_ad_year = temp_ad_date.getFullYear();
     }
@@ -450,13 +451,13 @@
     let getInitialInactiveDays = () => {
         const this_year = lang == "en" ? temp_ad_year : temp_nepali_year;
         const this_month = lang == "en" ? temp_ad_month : temp_nepali_month;
-        const first_week_day = new Date(this_year, this_month, 1).getDay();
-        const thisMonthF = new Date(today.getFullYear(), today.getMonth(), 1)
-        //console.log("xxxxxxxx");
-        const day_in_nepali = ad2bs(new Date(today.getFullYear(), today.getMonth(), 1));
-        //console.log(day_in_nepali, thisMonthF, day_in_nepali.day, thisMonthF.getDay());
+        const first_week_day = new Date(temp_ad_year, temp_ad_month, 1).getDay();
+        const day_in_nepali = ad2bs(new Date(temp_ad_year, temp_ad_month, 1));
+        let empty_days = 8 - ((day_in_nepali.date - first_week_day) % 7);
+        if (empty_days == 7) empty_days = 0;
+        if (empty_days == 8) empty_days = 1;
         let return_array = [];
-        for (const i in range(0, first_week_day)) {
+        for (const i in range(0, empty_days)) {
             return_array.push("");
         }
         return return_array;
@@ -479,8 +480,14 @@
         return return_array;
     }
 
+    let getEnglishDateUsingNepaliDay = (day) => {
+        const nepali_date = new Date(temp_nepali_year, temp_nepali_month, day);
+        const ad_date = bs2ad(nepali_date);
+        return ad_date.date;
+    }
+
     let isToday = (day) => {
-        const yesToday = day == today.getDate() && today.getFullYear() === temp_ad_year && today.getMonth() === temp_ad_month;
+        const yesToday = day == today_nepali.date && today_nepali.year === temp_nepali_year && today_nepali.month === temp_nepali_month;
         return yesToday;
     }
 
@@ -489,7 +496,7 @@
 <div class="calendar-container">
     <div class="calendar-head">
         <div class="calendar-title">
-            {title} {temp_nepali_month}
+            {title} {temp_nepali_month} {temp_ad_month}
         </div>
         <div class="cal-nav">
             <div class="cal-head-left">
@@ -529,7 +536,7 @@
                     {#each getActiveDays() as day}
                         <div class="day {isToday(day) ? "today" : ""}">
                             <span class="np-date">{day.toString().toNepaliDigits()}</span>
-                            <span class="int-date">{day}</span>
+                            <span class="int-date">{getEnglishDateUsingNepaliDay(day)}</span>
                             <span class="task"></span>
                         </div>
                     {/each}
