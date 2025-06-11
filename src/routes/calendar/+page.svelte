@@ -181,10 +181,11 @@
     let temp_ad_year = $state(temp_ad_date.getFullYear());
     let temp_ad_month = $state(temp_ad_date.getMonth());
 
-    const today_nepali = new Date(ad2bs(today));
-    let temp_nepali_date = new Date(today_nepali);
-    let temp_nepali_month = $state(temp_nepali_date.getMonth());
-    let temp_nepali_year = $state(temp_nepali_date.getFullYear());
+    const today_nepali = structuredClone(ad2bs(today));
+    console.log(today_nepali, today);
+    let temp_nepali_date = structuredClone(today_nepali);
+    let temp_nepali_month = $state(temp_nepali_date.month);
+    let temp_nepali_year = $state(temp_nepali_date.year);
 
     let now = {};
 
@@ -306,19 +307,6 @@
         return -1;
     }
 
-    function countDaysDiff(date, isBS = false) {
-        let refDate = isBS ? 
-            new Date(reference.np.year, reference.np.month - 1, reference.np.date) : 
-            new Date(reference.int.year, reference.int.month - 1, reference.int.date);
-        let timeDiff = date.getTime() - refDate.getTime();
-        let diffDays = parseInt(Math.ceil(timeDiff / (1000 * 3600 * 24))) + (!isLeapYear(date.getFullYear()) ? -1 : 0);
-        return {
-            value: Math.abs(diffDays),
-            dir: diffDays < 0 ? -1 : 1,
-            date: date,
-        };
-    }
-
     function daysInAMonth(year, month, isBS = false) {
         if (isBS) {
             return adDaysInMonth(year, month);
@@ -328,10 +316,24 @@
         }
     }
 
+    function countDaysDiff(date, isBS = false) {
+        let refDate = isBS ? 
+            new Date(reference.np.year, reference.np.month, reference.np.date) : 
+            new Date(reference.int.year, reference.int.month, reference.int.date);
+        let timeDiff = date.getTime() - refDate.getTime();
+        let diffDays = parseInt(Math.ceil(timeDiff / (1000 * 3600 * 24))) + (!isLeapYear(date.getFullYear()) ? -1 : 0);
+        return {
+            value: Math.abs(diffDays),
+            dir: diffDays < 0 ? -1 : 1,
+            date: date,
+        };
+    }
+
     function offsetDays(days, isBS = false) {
         let dayCount = days.value;
         let date = new Date(days.date);
         let refDate = isBS ? structuredClone(reference.np) : structuredClone(reference.int);
+        refDate.day = days.date.getDay();
         if (dayCount === 0) {
             return refDate;
         } else if (days.dir > 0) {
@@ -365,18 +367,17 @@
             }
             refDate.date = dayCount;
         }
-        refDate.day = date.getDay() + 1;
         return refDate;
     }
 
     function ad2bs(ad) {
         const refDate = offsetDays(countDaysDiff(ad), true);
-        return new Date(refDate.year, refDate.month - 1, refDate.date);
+        return refDate;
     }
 
     function bs2ad(bs) {
         const refDate = offsetDays(countDaysDiff(bs, true));
-        return new Date(refDate.year, refDate.month - 1, refDate.date);
+        return refDate;
     }
 
     function startDate(year = now.np.year, month = now.np.month) {
@@ -396,18 +397,27 @@
     }
 
     let changeToPreNepaliMonth = () => {
-        temp_nepali_date.setMonth(temp_nepali_date.getMonth() - 1);
-        alterTemps();
+        const nepali_ref_date = new Date(temp_nepali_date.year, temp_nepali_date.month, temp_nepali_date.date);
+        nepali_ref_date.setMonth(temp_nepali_date.month - 1);
+        alterTemps(nepali_ref_date, temp_nepali_date.day);
     }
     let changeToNextNepaliMonth = () => {
-        temp_nepali_date.setMonth(temp_nepali_date.getMonth() + 1);
-        alterTemps();
+        const nepali_ref_date = new Date(temp_nepali_date.year, temp_nepali_date.month, temp_nepali_date.date);
+        nepali_ref_date.setMonth(temp_nepali_date.month + 1);
+        alterTemps(nepali_ref_date, temp_nepali_date.day);
     }
     
-    function alterTemps() {
-        temp_ad_date = new Date(bs2ad(temp_nepali_date));
-        temp_nepali_month = temp_nepali_date.getMonth();
-        temp_nepali_year = temp_nepali_date.getFullYear();
+    function alterTemps(nepali_ref_date = null, day = null) {
+        temp_nepali_date = {
+            year: nepali_ref_date.getFullYear(),
+            month: nepali_ref_date.getMonth(),
+            date: nepali_ref_date.getDate(),
+            day: day
+        }
+        temp_nepali_month = temp_nepali_date.month;
+        temp_nepali_year = temp_nepali_date.year;
+        const ad_ref_date = bs2ad(nepali_ref_date);
+        temp_ad_date = new Date(ad_ref_date.year, ad_ref_date.month, ad_ref_date.date);
         temp_ad_month = temp_ad_date.getMonth();
         temp_ad_year = temp_ad_date.getFullYear();
     }
@@ -416,9 +426,9 @@
         temp_ad_date = new Date(today);
         temp_ad_month = temp_ad_date.getMonth();
         temp_ad_year = today.getFullYear();
-        temp_nepali_date = new Date(today_nepali);
-        temp_nepali_month = today_nepali.getMonth();
-        temp_nepali_year = today_nepali.getFullYear();
+        temp_nepali_date = structuredClone(today_nepali);
+        temp_nepali_month = today_nepali.month;
+        temp_nepali_year = today_nepali.year;
     }
 
     let getWeekDays = () => {
@@ -441,6 +451,10 @@
         const this_year = lang == "en" ? temp_ad_year : temp_nepali_year;
         const this_month = lang == "en" ? temp_ad_month : temp_nepali_month;
         const first_week_day = new Date(this_year, this_month, 1).getDay();
+        const thisMonthF = new Date(today.getFullYear(), today.getMonth(), 1)
+        //console.log("xxxxxxxx");
+        const day_in_nepali = ad2bs(new Date(today.getFullYear(), today.getMonth(), 1));
+        //console.log(day_in_nepali, thisMonthF, day_in_nepali.day, thisMonthF.getDay());
         let return_array = [];
         for (const i in range(0, first_week_day)) {
             return_array.push("");
@@ -475,7 +489,7 @@
 <div class="calendar-container">
     <div class="calendar-head">
         <div class="calendar-title">
-            {title} 
+            {title} {temp_nepali_month}
         </div>
         <div class="cal-nav">
             <div class="cal-head-left">
