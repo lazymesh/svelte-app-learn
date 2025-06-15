@@ -3,6 +3,7 @@
     let info = "this is nested <strong>svelte component</strong>";
     const colors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet'];
 	let selected = $state(colors[0]);
+    let binding_name = $state('world');
 </script>
 
 <p>{@html info} </p>
@@ -19,6 +20,9 @@
 	{/each}
 </div>
 
+<input bind:value={binding_name} />
+
+<h1>Hello {binding_name}!</h1>
 <style>
 p {
     color:rgb(235, 10, 10);
