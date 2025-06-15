@@ -222,7 +222,7 @@
 
     const daysInYear = 365;
 
-    const today = new Date(2025, 5, 11);
+    const today = new Date();
     let temp_ad_date = new Date(today)
     let temp_ad_year = $state(temp_ad_date.getFullYear());
     let temp_ad_month = $state(temp_ad_date.getMonth());
