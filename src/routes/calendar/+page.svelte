@@ -789,7 +789,7 @@
   gap: 0.1em;
   -ms-grid-rows: (1fr)[6];
   -ms-grid-columns: (1fr)[7];
-      grid-template: repeat(6, 1fr)/repeat(7, 1fr);
+      grid-template: repeat(5, 1fr)/repeat(7, 1fr);
   place-content: strech;
 }
 
