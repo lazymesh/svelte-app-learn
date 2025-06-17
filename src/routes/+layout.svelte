@@ -1,12 +1,17 @@
 <script>
-	let { children } = $props();
+	let { data, children } = $props();
+	console.log("llll ", JSON.stringify(data))
 </script>
 
 <nav>
-	<a href="/">home</a>
-	<a href="/card">card</a>
-	<a href="/about">about</a>
-	<a href="/calendar">calendar</a>
+	{data[0]}
+	{#each data.nav_tabs as nav_tab}
+		{#if nav_tab == "home"}
+		<a href="/">{nav_tab}</a>
+		{:else}
+		<a href="/{nav_tab}">{nav_tab}</a>
+		{/if}
+	{/each}
 </nav>
 
 {@render children()}
