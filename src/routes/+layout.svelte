@@ -1,6 +1,5 @@
 <script>
 	let { data, children } = $props();
-	console.log("llll ", JSON.stringify(data))
 </script>
 
 <nav>

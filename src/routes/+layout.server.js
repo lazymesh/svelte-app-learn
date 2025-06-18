@@ -1,5 +1,5 @@
 export function load() {
     return {
-        nav_tabs: ["home", "card", "about", "calendar"]
+        nav_tabs: ["home", "card", "about", "calendar", "roll"]
     };
 }
