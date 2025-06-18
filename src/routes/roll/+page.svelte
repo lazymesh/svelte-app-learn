@@ -8,7 +8,7 @@
 	}
 </script>
 
-<button onclick={roll}>Roll the dice</button>
+<button type="button" class="btn preset-filled-primary-500" onclick={roll}>Roll the dice</button>
 
 {#if number !== undefined}
 	<p>You rolled a {number}</p>
